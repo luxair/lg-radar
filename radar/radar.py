@@ -31,25 +31,23 @@ class Context:
 
 
 def process_adsb(context, msg):
-    if not pms.crc(msg):
-        print('Failed CRC')
+    if pms.bin2int(pms.crc(msg)) != 0:
         return
 
     tc = pms.adsb.typecode(msg)
 
-
     if tc in [1,2,3,4]:
-        #print(msg, tc, pms.adsb.icao(msg), pms.adsb.callsign(msg))
+        print(msg, tc, pms.adsb.icao(msg), pms.adsb.callsign(msg))
         context.registerAircraft(pms.adsb.icao(msg), pms.adsb.callsign(msg))
 
-    #if tc in [9, 10, 11, 12, 13, 14, 15, 16, 17, 18]:
-    #    print(
-    #        msg, tc, pms.adsb.icao(msg),
-    #        pms.adsb.altitude(msg)
-    #    )
+    if tc in [9, 10, 11, 12, 13, 14, 15, 16, 17, 18]:
+        print(
+            msg, tc, pms.adsb.icao(msg),
+            pms.adsb.altitude(msg)
+        )
 
 
-with subprocess.Popen(["rtl_adsb"], stdout=subprocess.PIPE) as adsb_flow:
+with subprocess.Popen(["rtl_adsb", "-g", "4"], stdout=subprocess.PIPE) as adsb_flow:
     context = Context()
 
     while True:

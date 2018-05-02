@@ -15,17 +15,22 @@ class Context:
         self.aircrafts = {}
 
     def registerAircraft(self, icao, callsign):
-        result = None
-
-        for aircraft in self.aircrafts.keys():
-            if aircraft.icao == icao:
-                result = aircraft
+        result = self.getAircraft(icao)
 
         if result == None:
             result = Aircraft(icao, callsign)
             self.aircrafts[result] = None
             print('New registration: %s, Currently tracking %5d aircrafts'
                     % (result, len(self.aircrafts)))
+
+        return result
+
+    def getAircraft(self, icao):
+        result = None
+
+        for aircraft in self.aircrafts.keys():
+            if aircraft.icao == icao:
+                result = aircraft
 
         return result
 
@@ -37,17 +42,20 @@ def process_adsb(context, msg):
     tc = pms.adsb.typecode(msg)
 
     if tc in [1,2,3,4]:
-        print(msg, tc, pms.adsb.icao(msg), pms.adsb.callsign(msg))
+        print(msg, '%2d' % tc, pms.adsb.icao(msg), pms.adsb.callsign(msg))
         context.registerAircraft(pms.adsb.icao(msg), pms.adsb.callsign(msg))
 
     if tc in [9, 10, 11, 12, 13, 14, 15, 16, 17, 18]:
+        icao = pms.adsb.icao(msg)
+        aircraft = context.getAircraft(icao)
         print(
-            msg, tc, pms.adsb.icao(msg),
-            pms.adsb.altitude(msg)
+            msg, '%2d' % tc, icao,
+            pms.adsb.altitude(msg),
+            aircraft
         )
 
 
-with subprocess.Popen(["rtl_adsb", "-g", "4"], stdout=subprocess.PIPE) as adsb_flow:
+with subprocess.Popen(['rtl_adsb'], stdout=subprocess.PIPE) as adsb_flow:
     context = Context()
 
     while True:

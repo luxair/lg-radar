@@ -7,7 +7,7 @@
 
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"
             crossorigin="anonymous"></script>
-    <meta http-equiv="refresh" content="5">
+    <meta http-equiv="refresh" content="1">
 </head>
 <body>
 <div class="container">
@@ -23,6 +23,10 @@
                     <th>Messages</th>
                     <th>Last message</th>
                     <th>Altitude</th>
+                    <th>Speed (kt)</th>
+                    <th>Heading (deg)</th>
+                    <th>Vert(ft/min)</th>
+                    <th>Speed Type (G/A)</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -34,6 +38,10 @@
                         <td>{{ aircraft.messages }}</td>
                         <td>{{ aircraft.getLatency() }}</td>
                         <td>{{ aircraft.altitude }}</td>
+                        <td>{{ aircraft.speed }}</td>
+                        <td>{{ aircraft.heading }}</td>
+                        <td>{{ aircraft.vspeed }}</td>
+                        <td>{{ aircraft.sptype }}</td>
                     </tr>
                 {% endfor %}
                 </tbody>

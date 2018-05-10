@@ -8,6 +8,10 @@ class Aircraft:
         self.messages = 1
         self.lastmessage = datetime.datetime.now()
         self.altitude = None
+        self.speed = None
+        self.heading = None
+        self.vspeed = None
+        self.sptype = None
 
     def getLatency(self):
         return datetime.datetime.now() - self.lastmessage

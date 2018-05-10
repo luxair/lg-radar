@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Aircraft Tracking</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
+          crossorigin="anonymous">
+
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"
+            crossorigin="anonymous"></script>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <h2>Tracking Information</h2>
+
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>ICAO</th>
+                    <th>Callsign</th>
+                </tr>
+                </thead>
+                <tbody>
+
+                {% for aircraft in aircrafts %}
+                    <tr>
+                        <td>{{ aircraft.icao }}</td>
+                        <td>{{ aircraft.callsign }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+</body>
+</html>

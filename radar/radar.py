@@ -1,7 +1,12 @@
 from adsb import AdsbThread
-from server import app
+from model import TrackingContext
+from server import RadarServer
 
 if __name__ == '__main__':
-    adsb_thread = AdsbThread()
+    tracking_context = TrackingContext()
+
+    adsb_thread = AdsbThread(tracking_context)
     adsb_thread.start()
-    app.run()
+
+    server = RadarServer(tracking_context)
+    server.run()

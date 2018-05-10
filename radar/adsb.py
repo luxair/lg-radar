@@ -1,51 +1,15 @@
 import subprocess
-import pyModeS as pms
 from threading import Thread
 
+import pyModeS as pms
 
-class Aircraft:
-    def __init__(self, icao, callsign):
-        self.icao = icao
-        self.callsign = callsign
-
-    def __str__(self):
-        return 'Aircraft{icao=%s, callsign=%-8s}' % (self.icao, self.callsign)
-
-
-class AircraftInformation:
-    def __init__(self):
-        self.altitude
-
-
-class Context:
-    def __init__(self):
-        self.aircrafts = {}
-
-    def registerAircraft(self, icao, callsign):
-        result = self.getAircraft(icao)
-
-        if result == None:
-            result = Aircraft(icao, callsign)
-            self.aircrafts[result] = None
-            print('New registration: %s, Currently tracking %5d aircrafts'
-                  % (result, len(self.aircrafts)))
-
-        return result
-
-    def getAircraft(self, icao):
-        result = None
-
-        for aircraft in self.aircrafts.keys():
-            if aircraft.icao == icao:
-                result = aircraft
-
-        return result
+from model import TrackingContext
 
 
 class AdsbThread(Thread):
-    def __init__(self):
+    def __init__(self, context: TrackingContext):
         super(AdsbThread, self).__init__()
-        self.context = Context()
+        self.context = context
 
     def run(self):
         with subprocess.Popen(['rtl_adsb'], stdin=subprocess.PIPE, stdout=subprocess.PIPE) as adsb_flow:
@@ -64,8 +28,9 @@ class AdsbThread(Thread):
         tc = pms.adsb.typecode(msg)
 
         if tc in [1, 2, 3, 4]:
-            print(msg, '%2d' % tc, pms.adsb.icao(msg), pms.adsb.callsign(msg))
-            self.context.registerAircraft(pms.adsb.icao(msg), pms.adsb.callsign(msg))
+            callsign = pms.adsb.callsign(msg).strip('_')
+            print(msg, '%2d' % tc, pms.adsb.icao(msg), callsign)
+            self.context.registerAircraft(pms.adsb.icao(msg), callsign)
 
         if tc in [9, 10, 11, 12, 13, 14, 15, 16, 17, 18]:
             icao = pms.adsb.icao(msg)

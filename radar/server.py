@@ -11,4 +11,4 @@ class RadarServer(Flask):
         self.add_url_rule('/', 'index', self.index)
 
     def index(self):
-        return render_template('tracking.html', aircrafts=self.context.aircrafts.keys())
+        return render_template('tracking.html', aircrafts=self.context.aircrafts)

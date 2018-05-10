@@ -1,3 +1,4 @@
+import datetime
 import subprocess
 from threading import Thread
 
@@ -34,9 +35,17 @@ class AdsbThread(Thread):
 
         if tc in [9, 10, 11, 12, 13, 14, 15, 16, 17, 18]:
             icao = pms.adsb.icao(msg)
+            altitude = pms.adsb.altitude(msg)
+
             aircraft = self.context.getAircraft(icao)
+
+            if aircraft is not None:
+                aircraft.lastmessage = datetime.datetime.now()
+                aircraft.messages += 1
+                aircraft.altitude = altitude
+
             print(
                 msg, '%2d' % tc, icao,
-                pms.adsb.altitude(msg),
+                altitude,
                 aircraft
             )

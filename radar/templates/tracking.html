@@ -32,11 +32,11 @@
                 <tbody>
 
                 {% for aircraft in aircrafts %}
-                    <tr>
+                    <tr class="{{ aircraft.getTrackingStatus() | torowclass }}">
                         <td>{{ aircraft.icao }}</td>
                         <td>{{ aircraft.callsign }}</td>
                         <td>{{ aircraft.messages }}</td>
-                        <td>{{ aircraft.getLatency() }}</td>
+                        <td>{{ aircraft.getLatency() | toelapsed }}</td>
                         <td>{{ aircraft.altitude }}</td>
                         <td>{{ aircraft.speed }}</td>
                         <td>{{ aircraft.heading }}</td>

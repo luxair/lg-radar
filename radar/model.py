@@ -3,18 +3,33 @@ import datetime
 
 class Aircraft:
     def __init__(self, icao, callsign):
+        now = datetime.datetime.now()
         self.icao = icao
         self.callsign = callsign
         self.messages = 1
-        self.lastmessage = datetime.datetime.now()
+        self.firstmessage = now
+        self.lastmessage = now
         self.altitude = None
         self.speed = None
         self.heading = None
         self.vspeed = None
         self.sptype = None
 
-    def getLatency(self):
+    def getLatency(self) -> datetime.timedelta:
         return datetime.datetime.now() - self.lastmessage
+
+    def getAverageInterval(self) -> datetime.timedelta:
+        return None if self.messages < 2 else \
+            (self.lastmessage - self.firstmessage) / (self.messages - 1)
+
+    def getTrackingStatus(self) -> bool:
+        avg = self.getAverageInterval()
+        lat = self.getLatency()
+
+        if avg is None:
+            return lat.total_seconds() < 120
+        else:
+            return lat < 10 * avg and lat.total_seconds() > 10
 
     def __str__(self):
         return 'Aircraft{icao=%s, callsign=%-8s}' % (self.icao, self.callsign)
@@ -29,7 +44,7 @@ class TrackingContext:
 
         if result == None:
             result = Aircraft(icao, callsign)
-            self.aircrafts.append(result)
+            self.aircrafts.insert(0, result)
             print('New registration: %s, Currently tracking %5d aircrafts'
                   % (result, len(self.aircrafts)))
 

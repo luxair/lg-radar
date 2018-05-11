@@ -29,7 +29,7 @@ class Aircraft:
         if avg is None:
             return lat.total_seconds() < 120
         else:
-            return lat < 10 * avg and lat.total_seconds() > 10
+            return lat < 10 * avg or lat.total_seconds() < 10
 
     def __str__(self):
         return 'Aircraft{icao=%s, callsign=%-8s}' % (self.icao, self.callsign)

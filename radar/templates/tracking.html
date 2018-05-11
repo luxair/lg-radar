@@ -23,6 +23,8 @@
                     <th>Messages</th>
                     <th>Last message</th>
                     <th>Altitude</th>
+                    <th>Lat</th>
+                    <th>Lon</th>
                     <th>Speed (kt)</th>
                     <th>Heading (deg)</th>
                     <th>Vert(ft/min)</th>
@@ -35,9 +37,11 @@
                     <tr class="{{ aircraft.getTrackingStatus() | torowclass }}">
                         <td>{{ aircraft.icao }}</td>
                         <td>{{ aircraft.callsign }}</td>
-                        <td>{{ aircraft.messages }}</td>
+                        <td>{{ aircraft.messages | tolen }}</td>
                         <td>{{ aircraft.getLatency() | toelapsed }}</td>
                         <td>{{ aircraft.altitude }}</td>
+                        <td>{{ aircraft.lat }}</td>
+                        <td>{{ aircraft.lon }}</td>
                         <td>{{ aircraft.speed }}</td>
                         <td>{{ aircraft.heading }}</td>
                         <td>{{ aircraft.vspeed }}</td>

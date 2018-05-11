@@ -13,6 +13,7 @@ class RadarServer(Flask):
         self.add_url_rule('/', 'index', self.index)
         self.add_template_filter(self.filter_torowclass, 'torowclass')
         self.add_template_filter(self.filter_toelapsed, 'toelapsed')
+        self.add_template_filter(self.filter_tolen, 'tolen')
 
     def index(self):
         return render_template('tracking.html', aircrafts=self.context.aircrafts)
@@ -22,3 +23,6 @@ class RadarServer(Flask):
 
     def filter_toelapsed(self, input: datetime.timedelta) -> str:
         return '%ds ago' % (input.total_seconds())
+
+    def filter_tolen(self, o) -> int:
+        return len(o)

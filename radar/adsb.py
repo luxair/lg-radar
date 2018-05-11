@@ -4,7 +4,34 @@ from threading import Thread
 
 import pyModeS as pms
 
-from model import TrackingContext
+from model import TrackingContext, Aircraft
+
+TC_IDENTIFICATION = [1, 2, 3, 4]
+TC_POSITION = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+TC_VELOCITY = [19]
+
+
+def compute_location(aircraft: Aircraft):
+    last_o = None
+    last_e = None
+
+    for msgentry in aircraft.messages.entries:
+        msg = msgentry.message
+        tc = pms.adsb.typecode(msg)
+
+        if tc in TC_POSITION:
+            oe_flag = pms.adsb.oe_flag(msg)
+
+            if oe_flag == 0:
+                last_e = msgentry
+            else:
+                last_o = msgentry
+
+    if last_o is not None and last_e is not None:
+        pos = pms.adsb.position(last_e.message, last_o.message, last_e.timestamp, last_o.timestamp)
+        return pos
+    else:
+        return (None, None)
 
 
 class AdsbThread(Thread):
@@ -22,26 +49,29 @@ class AdsbThread(Thread):
 
                 self.process_adsb(msg.decode('ascii').strip('*;\r\n'))
 
-    def process_adsb(self, msg):
+    def process_adsb(self, msg: str) -> None:
         if pms.bin2int(pms.crc(msg)) != 0:
             return
-
         tc = pms.adsb.typecode(msg)
         icao = pms.adsb.icao(msg)
 
-        if tc in [1, 2, 3, 4]:
+        if tc in TC_IDENTIFICATION:
             callsign = pms.adsb.callsign(msg).strip('_')
             print(msg, '%2d' % tc, pms.adsb.icao(msg), callsign)
             self.context.registerAircraft(pms.adsb.icao(msg), callsign)
 
-        if tc in [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]:
+        if tc in TC_POSITION:
             altitude = pms.adsb.altitude(msg)
             aircraft = self.context.getAircraft(icao)
 
             if aircraft is not None:
-                aircraft.messages += 1
+                aircraft.messages.add(msg)
                 aircraft.lastmessage = datetime.datetime.now()
                 aircraft.altitude = altitude
+                lat, lon = compute_location(aircraft)
+                if lat is not None and lon is not None:
+                    aircraft.lat = lat
+                    aircraft.lon = lon
 
             print(
                 msg, '%2d' % tc, icao,
@@ -49,12 +79,12 @@ class AdsbThread(Thread):
                 aircraft
             )
 
-        if tc in [19]:
+        if tc in TC_VELOCITY:
             velocity = pms.adsb.velocity(msg)
             aircraft = self.context.getAircraft(icao)
 
             if aircraft is not None:
-                aircraft.messages += 1
+                aircraft.messages.add(msg)
                 aircraft.lastmessage = datetime.datetime.now()
                 aircraft.speed, aircraft.heading, \
                 aircraft.vspeed, aircraft.sptype = velocity

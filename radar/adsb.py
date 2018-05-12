@@ -29,9 +29,10 @@ def compute_location(aircraft: Aircraft):
 
     if last_o is not None and last_e is not None:
         pos = pms.adsb.position(last_e.message, last_o.message, last_e.timestamp, last_o.timestamp)
-        return pos
+        print('POS:', pos)
+        return pos or (None, None)
     else:
-        return (None, None)
+        return None, None
 
 
 class AdsbThread(Thread):
@@ -58,7 +59,8 @@ class AdsbThread(Thread):
         if tc in TC_IDENTIFICATION:
             callsign = pms.adsb.callsign(msg).strip('_')
             print(msg, '%2d' % tc, pms.adsb.icao(msg), callsign)
-            self.context.registerAircraft(pms.adsb.icao(msg), callsign)
+            aircraft = self.context.registerAircraft(pms.adsb.icao(msg), callsign)
+            aircraft.messages.add(msg)
 
         if tc in TC_POSITION:
             altitude = pms.adsb.altitude(msg)

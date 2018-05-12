@@ -3,7 +3,7 @@ import datetime
 
 class MessageEntry:
     def __init__(self, msg: str):
-        self.timestamp = datetime.datetime.now().timestamp()
+        self.timestamp = datetime.datetime.now()
         self.message = msg
 
 

@@ -27,9 +27,12 @@ def compute_location(aircraft: Aircraft):
             else:
                 last_o = msgentry
 
-    if last_o is not None and last_e is not None:
+    if last_o is not None and last_e is not None and \
+            pms.adsb.df(last_e.message) == pms.adsb.df(last_o.message) and \
+            pms.adsb.typecode(last_e.message) == pms.adsb.typecode(last_o.message) and \
+            abs((last_e.timestamp - last_o.timestamp).total_seconds()) < 5:
         pos = pms.adsb.position(last_e.message, last_o.message, last_e.timestamp, last_o.timestamp)
-        print('POS:', pos)
+        print(pos, 'as of', last_o.timestamp, last_e.timestamp)
         return pos or (None, None)
     else:
         return None, None

@@ -4,16 +4,18 @@ from io import BytesIO
 import matplotlib.pyplot as plt
 from flask import Flask, render_template, make_response
 
-from model import TrackingContext
+from model import TrackingContext, TrackingObserver, Aircraft
 
-reference_position = (49, 5.68333)
+reference_position = (49.001582, 5.693415)
 
 
-class RadarServer(Flask):
+class RadarServer(Flask, TrackingObserver):
 
     def __init__(self, context: TrackingContext):
         super(RadarServer, self).__init__(__name__)
         self.context = context
+        self.context.addObserver(self)
+        self.aircraft_paths = {}
         self.add_url_rule('/', 'index', self.index)
         self.add_url_rule('/map', 'map', self.map)
         self.add_template_filter(self.filter_torowclass, 'torowclass')
@@ -23,17 +25,25 @@ class RadarServer(Flask):
     def index(self):
         return render_template('tracking.html', aircrafts=self.context.aircrafts)
 
+    def filter_torowclass(self, input: bool) -> str:
+        return 'table-light' if input else 'table-warning'
+
+    def filter_toelapsed(self, input: datetime.timedelta) -> str:
+        return '%ds ago' % (input.total_seconds())
+
+    def filter_tolen(self, o) -> int:
+        return len(o)
+
     def map(self):
         plt.style.use('bmh')
         plt.figure(figsize=(12, 8), dpi=80, facecolor='1.0')
 
-        plt.scatter(x=[reference_position[0]],
-                    y=[reference_position[1]],
+        plt.scatter(x=[reference_position[1]],
+                    y=[reference_position[0]],
                     label='Antenna')
 
-        plt.scatter(x=[a.lon for a in self.context.aircrafts],
-                    y=[a.lat for a in self.context.aircrafts],
-                    label='Aircrafts')
+        for cs, path in self.aircraft_paths.items():
+            plt.scatter(x=[p[1] for p in path], y=[p[0] for p in path], label=cs)
 
         plt.legend()
 
@@ -46,11 +56,16 @@ class RadarServer(Flask):
 
         return response
 
-    def filter_torowclass(self, input: bool) -> str:
-        return 'table-light' if input else 'table-warning'
+    def aircraft_updated(self, aircraft: Aircraft):
+        if aircraft.lat is None or aircraft.lon is None:
+            return
 
-    def filter_toelapsed(self, input: datetime.timedelta) -> str:
-        return '%ds ago' % (input.total_seconds())
+        cs = aircraft.callsign
 
-    def filter_tolen(self, o) -> int:
-        return len(o)
+        if not cs in self.aircraft_paths:
+            self.aircraft_paths[cs] = []
+
+        coord = (aircraft.lat, aircraft.lon)
+
+        if coord not in self.aircraft_paths[cs]:
+            self.aircraft_paths[cs].append(coord)

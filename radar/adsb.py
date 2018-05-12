@@ -61,6 +61,7 @@ class AdsbThread(Thread):
             print(msg, '%2d' % tc, pms.adsb.icao(msg), callsign)
             aircraft = self.context.registerAircraft(pms.adsb.icao(msg), callsign)
             aircraft.messages.add(msg)
+            self.context.notify(aircraft)
 
         if tc in TC_POSITION:
             altitude = pms.adsb.altitude(msg)
@@ -74,6 +75,8 @@ class AdsbThread(Thread):
                 if lat is not None and lon is not None:
                     aircraft.lat = lat
                     aircraft.lon = lon
+
+                self.context.notify(aircraft)
 
             print(
                 msg, '%2d' % tc, icao,
@@ -90,6 +93,8 @@ class AdsbThread(Thread):
                 aircraft.lastmessage = datetime.datetime.now()
                 aircraft.speed, aircraft.heading, \
                 aircraft.vspeed, aircraft.sptype = velocity
+
+                self.context.notify(aircraft)
 
             print(
                 msg, '%2d' % tc, icao,

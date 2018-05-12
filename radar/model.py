@@ -55,9 +55,19 @@ class Aircraft:
         return 'Aircraft{icao=%s, callsign=%-8s}' % (self.icao, self.callsign)
 
 
+class TrackingObserver:
+
+    def aircraft_updated(self, aircraft: Aircraft):
+        pass
+
+
 class TrackingContext:
     def __init__(self):
         self.aircrafts = []
+        self.observers = []
+
+    def addObserver(self, obs: TrackingObserver):
+        self.observers.append(obs)
 
     def registerAircraft(self, icao: str, callsign: str) -> Aircraft:
         result = self.getAircraft(icao)
@@ -78,3 +88,7 @@ class TrackingContext:
                 result = aircraft
 
         return result
+
+    def notify(self, aircraft: Aircraft):
+        for obs in self.observers:
+            obs.aircraft_updated(aircraft)

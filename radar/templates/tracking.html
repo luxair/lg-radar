@@ -7,15 +7,15 @@
 
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"
             crossorigin="anonymous"></script>
-    <meta http-equiv="refresh" content="5">
+    {#<meta http-equiv="refresh" content="5">#}
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <a class="navbar-brand" href="/">Tracking Information</a>
 </nav>
-<div class="container">
+<div class="container-fluid">
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-6">
             <table class="table">
                 <thead>
                 <tr>
@@ -51,6 +51,9 @@
                 {% endfor %}
                 </tbody>
             </table>
+        </div>
+        <div class="col-md-6">
+            <img src="/map"/>
         </div>
     </div>
 </div>

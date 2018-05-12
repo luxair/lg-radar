@@ -2,10 +2,11 @@ import datetime
 from io import BytesIO
 
 import matplotlib.pyplot as plt
-import numpy as np
 from flask import Flask, render_template, make_response
 
 from model import TrackingContext
+
+reference_position = (49, 5.68333)
 
 
 class RadarServer(Flask):
@@ -23,14 +24,17 @@ class RadarServer(Flask):
         return render_template('tracking.html', aircrafts=self.context.aircrafts)
 
     def map(self):
-        pm10 = np.array(['23', '45', '56', '12'])
-        pm25 = np.array(['34', '56', '59', '34'])
-        dates = np.array(['2017-12-20', '2017-12-21', '2017-12-22', '2017-12-23'])
-
+        plt.style.use('bmh')
         plt.figure(figsize=(12, 8), dpi=80, facecolor='1.0')
-        plt.title("GangNam", fontsize=20)
-        plt.plot_date(dates, pm10, 'rs--', label='pm10')
-        plt.plot_date(dates, pm25, 'gs--', label='pm25')
+
+        plt.scatter(x=[reference_position[0]],
+                    y=[reference_position[1]],
+                    label='Antenna')
+
+        plt.scatter(x=[a.lon for a in self.context.aircrafts],
+                    y=[a.lat for a in self.context.aircrafts],
+                    label='Aircrafts')
+
         plt.legend()
 
         img = BytesIO()

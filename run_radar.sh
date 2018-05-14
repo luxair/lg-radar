@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python3 radar/radar.py
+./venv/bin/python radar/radar.py

@@ -1,13 +1,8 @@
 import datetime
-from io import BytesIO
 
-import matplotlib.pyplot as plt
 from flask import Flask, render_template, make_response
 
 from model import TrackingContext, TrackingObserver, Aircraft
-
-reference_position = (49.001582, 5.693415)
-
 
 class RadarServer(Flask, TrackingObserver):
 
@@ -17,7 +12,6 @@ class RadarServer(Flask, TrackingObserver):
         self.context.addObserver(self)
         self.aircraft_paths = {}
         self.add_url_rule('/', 'index', self.index)
-        self.add_url_rule('/map', 'map', self.map)
         self.add_template_filter(self.filter_torowclass, 'torowclass')
         self.add_template_filter(self.filter_toelapsed, 'toelapsed')
         self.add_template_filter(self.filter_tolen, 'tolen')
@@ -33,28 +27,6 @@ class RadarServer(Flask, TrackingObserver):
 
     def filter_tolen(self, o) -> int:
         return len(o)
-
-    def map(self):
-        plt.style.use('bmh')
-        plt.figure(figsize=(12, 8), dpi=80, facecolor='1.0')
-
-        plt.scatter(x=[reference_position[1]],
-                    y=[reference_position[0]],
-                    label='Antenna')
-
-        for cs, path in self.aircraft_paths.items():
-            plt.scatter(x=[p[1] for p in path], y=[p[0] for p in path], label=cs)
-
-        plt.legend()
-
-        img = BytesIO()
-        plt.savefig(img, format='png')
-        img.seek(0)
-        response = make_response(img.getvalue())
-        response.headers['Content-Type'] = 'image/png'
-        img.close()
-
-        return response
 
     def aircraft_updated(self, aircraft: Aircraft):
         if aircraft.lat is None or aircraft.lon is None:

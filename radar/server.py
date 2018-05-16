@@ -1,8 +1,13 @@
 import datetime
+import logging
 
-from flask import Flask, render_template, make_response
+from flask import Flask, render_template
 
 from model import TrackingContext, TrackingObserver, Aircraft
+
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
+
 
 class RadarServer(Flask, TrackingObserver):
 
@@ -10,7 +15,6 @@ class RadarServer(Flask, TrackingObserver):
         super(RadarServer, self).__init__(__name__)
         self.context = context
         self.context.addObserver(self)
-        self.aircraft_paths = {}
         self.add_url_rule('/', 'index', self.index)
         self.add_template_filter(self.filter_torowclass, 'torowclass')
         self.add_template_filter(self.filter_toelapsed, 'toelapsed')
@@ -27,17 +31,3 @@ class RadarServer(Flask, TrackingObserver):
 
     def filter_tolen(self, o) -> int:
         return len(o)
-
-    def aircraft_updated(self, aircraft: Aircraft):
-        if aircraft.lat is None or aircraft.lon is None:
-            return
-
-        cs = aircraft.callsign
-
-        if not cs in self.aircraft_paths:
-            self.aircraft_paths[cs] = []
-
-        coord = (aircraft.lat, aircraft.lon)
-
-        if coord not in self.aircraft_paths[cs]:
-            self.aircraft_paths[cs].append(coord)

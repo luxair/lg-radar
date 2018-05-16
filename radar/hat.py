@@ -4,13 +4,7 @@ from threading import Thread
 import unicornhathd
 
 from model import TrackingContext, Aircraft, TrackingObserver
-
-center_coord = (49.632901, 6.278495)
-
-airport_coords = ((49.617212, 6.186466),
-                  (49.622040, 6.199735),
-                  (49.629643, 6.219741),
-                  (49.636122, 6.237195))
+from poi import center_coord, airport_coords
 
 
 class HatThread(Thread, TrackingObserver):

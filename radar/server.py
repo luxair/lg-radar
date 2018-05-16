@@ -5,8 +5,7 @@ import matplotlib.pyplot as plt
 from flask import Flask, render_template, make_response
 
 from model import TrackingContext, TrackingObserver, Aircraft
-
-reference_position = (49.632901, 6.278495)
+from poi import airport_coords, center_coord
 
 
 class RadarServer(Flask, TrackingObserver):
@@ -38,12 +37,19 @@ class RadarServer(Flask, TrackingObserver):
         plt.style.use('bmh')
         plt.figure(figsize=(12, 8), dpi=80, facecolor='1.0')
 
-        plt.scatter(x=[reference_position[1]],
-                    y=[reference_position[0]],
-                    label='Antenna')
-
         for cs, path in self.aircraft_paths.items():
             plt.scatter(x=[p[1] for p in path], y=[p[0] for p in path], label=cs)
+
+        plt.plot([airport_coords[0][1], airport_coords[1][1]],
+                 [airport_coords[0][0], airport_coords[1][0]], 'k-', lw=2)
+
+        rad = 0.001
+        plt.plot([center_coord[1] - rad, center_coord[1] + rad],
+                 [center_coord[0] - rad, center_coord[0] + rad],
+                 'k-', lw=2)
+        plt.plot([center_coord[1] - rad, center_coord[1] + rad],
+                 [center_coord[0] + rad, center_coord[0] - rad],
+                 'k-', lw=2)
 
         plt.legend()
 

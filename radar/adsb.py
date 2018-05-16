@@ -30,9 +30,9 @@ def compute_location(aircraft: Aircraft):
     if last_o is not None and last_e is not None and \
             pms.adsb.df(last_e.message) == pms.adsb.df(last_o.message) and \
             pms.adsb.typecode(last_e.message) == pms.adsb.typecode(last_o.message) and \
-            abs((last_e.timestamp - last_o.timestamp).total_seconds()) < 5:
+            abs((last_e.timestamp - last_o.timestamp).total_seconds()) < 30:
         pos = pms.adsb.position(last_e.message, last_o.message, last_e.timestamp, last_o.timestamp)
-        print(pos, 'as of', last_o.timestamp, last_e.timestamp)
+        # print(pos, 'as of', last_o.timestamp, last_e.timestamp)
         return pos or (None, None)
     else:
         return None, None
@@ -42,9 +42,11 @@ class AdsbThread(Thread):
     def __init__(self, context: TrackingContext):
         super(AdsbThread, self).__init__()
         self.context = context
+        self.messages = 0
+        self.rejects = 0
 
     def run(self):
-        with subprocess.Popen(['rtl_adsb'], stdin=subprocess.PIPE, stdout=subprocess.PIPE) as adsb_flow:
+        with subprocess.Popen(['rtl_adsb', '-g', '48'], stdin=subprocess.PIPE, stdout=subprocess.PIPE) as adsb_flow:
             while True:
                 msg = adsb_flow.stdout.readline()
 
@@ -54,8 +56,12 @@ class AdsbThread(Thread):
                 self.process_adsb(msg.decode('ascii').strip('*;\r\n'))
 
     def process_adsb(self, msg: str) -> None:
+        self.messages += 1
         if pms.bin2int(pms.crc(msg)) != 0:
+            self.rejects += 1
             return
+        print('Error rate:', 100 * self.rejects / self.messages)
+
         tc = pms.adsb.typecode(msg)
         icao = pms.adsb.icao(msg)
 

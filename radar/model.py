@@ -71,13 +71,7 @@ class TrackingContext:
 
     def registerAircraft(self, icao: str, callsign: str) -> Aircraft:
         result = self.getAircraft(icao)
-
-        if result == None:
-            result = Aircraft(icao, callsign)
-            self.aircrafts.insert(0, result)
-            print('New registration: %s, Currently tracking %5d aircrafts'
-                  % (result, len(self.aircrafts)))
-
+        result.callsign = callsign
         return result
 
     def getAircraft(self, icao: str) -> Aircraft:
@@ -86,6 +80,10 @@ class TrackingContext:
         for aircraft in self.aircrafts:
             if aircraft.icao == icao:
                 result = aircraft
+
+        if result is None:
+            result = Aircraft(icao, '???')
+            self.aircrafts.insert(0, result)
 
         return result
 

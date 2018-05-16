@@ -57,10 +57,13 @@ class AdsbThread(Thread):
 
     def process_adsb(self, msg: str) -> None:
         self.messages += 1
+
+        msg = self.correct(msg)
+
         if pms.bin2int(pms.crc(msg)) != 0:
             self.rejects += 1
             return
-        print('Error rate:', 100 * self.rejects / self.messages)
+        # print('Error rate:', 100 * self.rejects / self.messages)
 
         tc = pms.adsb.typecode(msg)
         icao = pms.adsb.icao(msg)
@@ -110,3 +113,30 @@ class AdsbThread(Thread):
                 velocity,
                 aircraft
             )
+
+    def correct(self, msg):
+        crc = pms.bin2int(pms.crc(msg))
+        result = msg
+
+        if crc != 0:
+            msg_bin = pms.hex2bin(msg)
+            for i in range(len(msg_bin) - 24):
+                if msg_bin[i] == '0':
+                    msg_bin = self.replace(msg_bin, i, '1')
+                else:
+                    msg_bin = self.replace(msg_bin, i, '0')
+
+                patched_msg = hex(int(msg_bin, 2))[2:]
+                if pms.bin2int(pms.crc(patched_msg)) == 0:
+                    result = patched_msg
+                    break
+
+                if msg_bin[i] == '0':
+                    msg_bin = self.replace(msg_bin, i, '1')
+                else:
+                    msg_bin = self.replace(msg_bin, i, '0')
+
+        return result
+
+    def replace(self, msg_bin, i, s):
+        return msg_bin[:i] + s + msg_bin[i + 1:]

@@ -6,7 +6,7 @@ from flask import Flask, render_template, make_response
 
 from model import TrackingContext, TrackingObserver, Aircraft
 
-reference_position = (49.001582, 5.693415)
+reference_position = (49.632901, 6.278495)
 
 
 class RadarServer(Flask, TrackingObserver):
